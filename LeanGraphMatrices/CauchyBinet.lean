@@ -23,3 +23,16 @@ theorem Matrix.det_mul' (A : Matrix (Fin m) (Fin n) R) (B : Matrix (Fin n) (Fin 
 example : True := by
   have := Matrix.det_mul' !![1, 2, (3 : ℤ)] !![1; 2; 3]
   simp [Fin.sum_univ_succ] at this
+
+/-- `List.sublistsLen`, but using `List.Vector`. -/
+def List.subvectorsLen {α} (l : List α) (n : ℕ) : List (List.Vector α n) :=
+  l.sublistsLen n |>.attach.map fun x => ⟨x.1, by have := x.prop; aesop⟩
+
+#eval List.subvectorsLen ["A", "B", "C"] 2
+
+/-- A version of Cauchy-Binet stated using lists and `Fin n`. -/
+theorem Matrix.det_mul_fin (A : Matrix (Fin m) (Fin n) R) (B : Matrix (Fin n) (Fin m) R) :
+    det (A * B) =
+      ((List.finRange n |>.subvectorsLen m).map fun l =>
+        det (A.submatrix id l.get) * det (B.submatrix l.get id)).sum := by
+  sorry
