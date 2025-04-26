@@ -3,9 +3,7 @@
 Formalize a statement and proof of the [matrix tree theorem](https://en.wikipedia.org/wiki/Kirchhoff%27s_theorem) in Lean:
 
 > If $G$ is a simple graph with Laplacian matrix $L$, then for any vertex $q$ we have
-> $$
-> \det L |_q = \#(\text{spanning trees of }G),
-> $$
+> $\qquad \det L |_q = \#(\text{spanning trees of }G)$,  
 > where $L |_q$ denotes the matrix with $q$-indexes row and column removed.
 
 ## Pieces of theorem statement
