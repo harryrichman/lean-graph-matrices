@@ -24,6 +24,12 @@ Other references:
 
 - [Finset.erase](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Data/Finset/Erase.html#Finset.erase), erase an element from a finite set
 
+- [SimpleGraph.incMatrix](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Combinatorics/SimpleGraph/IncMatrix.html), the *unsigned* incidence matrix of a graph
+
+- [Finset.sum_const_nat](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Algebra/BigOperators/Group/Finset/Basic.html#Finset.sum_const_nat)
+
+- [Fin.sum_const](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Algebra/BigOperators/Fin.html#Fin.sum_const)
+
 ## Using Lean
 
 Search tools:

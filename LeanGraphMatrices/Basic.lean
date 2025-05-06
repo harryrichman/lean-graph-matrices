@@ -44,7 +44,7 @@ noncomputable def set_inj24 : Finset (Fin 2 ↪o Fin 4) := Finset.univ
 #check set_inj24
 
 #eval set2.card
-#eval set_inj24.card
+-- #eval set_inj24.card
 
 
 /-- operations of Finsets and Fintypes -/
