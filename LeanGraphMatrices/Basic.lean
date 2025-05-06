@@ -13,6 +13,15 @@ def my_set : Finset ℕ := {1, 2, 3}
 #check s(1, 3)
 #check ⟦1⟧
 
+#eval Finset.powersetCard 2 {"hello", "wo", "rld"}
+
+#eval !![1, 2, 3; 4, 5, 6].submatrix id (Fin.succ)
+
+-- theorem foo (x : ℕ) : x + x = x := by
+--   plausible
+
+#synth Ring ℤ
+
 
 -- Matrix calculation
 
@@ -30,7 +39,7 @@ def calculateDeterminant :=
 
 /-- set inclusions -/
 
-def answer : (Fin 4) := Fin.succ (13 : Fin 3)
+def answer : (Fin 4) := Fin.succ (2 : Fin 3)
 #check answer
 #eval answer
 
@@ -97,10 +106,18 @@ def redLapMatrix' {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [De
   (G.lapMatrix ℤ).submatrix inc inc
 
 def G := completeGraph (Fin 4)
+#check G.Adj 1 1
+#check completeGraph
+
 instance : DecidableRel G.Adj := by
-  unfold DecidableRel
   intro a b
-  sorry
+  dsimp [G, completeGraph]
+  apply inferInstance
+
+#eval G.Adj 1 5
+
+#eval G.lapMatrix ℤ
+#eval (redLapMatrix' G 3).det -- 16
 
 -- edge set of house graph
 def hge : (Fin 5) → (Fin 5) → Bool

@@ -3,29 +3,37 @@ import LeanGraphMatrices.ForMathlib
 
 open scoped Matrix
 
--- #synth Ring ℕ
-
-#synth Ring ℤ
-
 variable {R : Type* } { m n : ℕ } [CommRing R]
-
-#eval Finset.powersetCard 2 {"hello", "wo", "rld"}
-
-#eval !![1, 2, 3; 4, 5, 6].submatrix id (Fin.succ)
-
-theorem foo (x : ℕ) : x + x = x := by
-  plausible
 
 /-- Cauchy-Binet, https://en.wikipedia.org/wiki/Cauchy%E2%80%93Binet_formula -/
 
 theorem Matrix.det_mul' (A : Matrix (Fin m) (Fin n) R) (B : Matrix (Fin n) (Fin m) R) :
   det (A * B) = ∑ f : Fin m ↪o Fin n, det (A.submatrix id f) * det (B.submatrix f id) := by
--- real proof starts here
+  -- expand determinant in matrix entries as sum over permutations, on LHS
+  rw [Matrix.det_apply (A * B)]
+  -- simp_rw [Matrix.mul_apply, Finset.prod_sum, Finset.prod_mul_distrib]
+  -- expand entries of matrix product A*B
+  simp_rw [Matrix.mul_apply]
+  -- interchange product (over Fin m) and sum (over Fin n)
+  simp_rw [Finset.prod_sum]
+  simp only [Finset.univ_pi_univ, Finset.prod_attach_univ]
+  -- rewrite (prod_i a_i*b_i) as (prod_i a_i) * (prod_i b_i)
+  simp_rw [Finset.prod_mul_distrib]
+  -- simp_all only [Finset.univ_pi_univ, Finset.prod_attach_univ]
+  -- expand determinats on RHS
+  simp_rw [Matrix.det_apply]
+  simp_all only [submatrix_apply, id_eq]
+  -- calc
+  --   ∑ x, Equiv.Perm.sign x • ∑ x_1, (∏ x_2, A (x x_2) (x_1 x_2 ⟨x_2, Finset.mem_univ x_2⟩.property)) * ∏ x, B (x_1 x ⟨x, Finset.mem_univ x⟩.property) x = ∑ x_1, ∑ σ, Equiv.Perm.sign σ • (∏ x_2, A (σ x_2) (x_1 x_2 ⟨x_2, Finset.mem_univ x_2⟩.property)) * ∏ x, B (x_1 x ⟨x, Finset.mem_univ x⟩.property) x := by rfl -- by simp?
+  --   _ = 0 := by simp?
+  --   _ = ∑ x, (∑ x_1, Equiv.Perm.sign x_1 • ∏ x_2, A (x_1 x_2) (x x_2)) * ∑ x_1, Equiv.Perm.sign x_1 • ∏ x_2, B (x (x_1 x_2)) x_2 := by rfl
   sorry
 
+
 example : True := by
-  have := Matrix.det_mul' !![1, 2, (3 : ℤ)] !![1; 2; 3]
+  have := Matrix.det_mul' !![1, 2, 3] (!![1; 2; 3] : Matrix _ _ ℤ)
   simp [Fin.sum_univ_succ] at this
+  itauto
 
 /-- `List.sublistsLen`, but using `List.Vector`. -/
 def List.subvectorsLen {α} (l : List α) (n : ℕ) : List (List.Vector α n) :=
