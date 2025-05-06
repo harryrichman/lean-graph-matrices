@@ -1,5 +1,19 @@
 import Mathlib.Combinatorics.SimpleGraph.IncMatrix
 
+variable (R : Type) --
+
+variable {V : Type} (G : SimpleGraph V)
+variable [G.LocallyFinite]
+
+/-- incidence matrix; copied from mathlib version without `noncomputable` -/
+def incMatrix' {V : Type} (G : SimpleGraph V) : Matrix V (Sym2 V) ℤ := fun a =>
+  (G.incidenceFinset a).indicator 1
+
+#check G.neighborSet
+#check G.incidenceSet
+#check G.incidenceFinset
+#check G.LocallyFinite
+
 -- edge set of house graph
 def hge : (Fin 5) → (Fin 5) → Bool
   | 0, 1 => true
