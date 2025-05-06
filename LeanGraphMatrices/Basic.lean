@@ -1,1 +1,128 @@
+-- import Mathlib
+import Mathlib.Combinatorics.SimpleGraph.Finite
+import Mathlib.Combinatorics.SimpleGraph.LapMatrix
+import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
+
+
 def hello := "world"
+
+#check 2 + 2
+
+def my_set : Finset ℕ := {1, 2, 3}
+#check {1, 2}
+#check s(1, 3)
+#check ⟦1⟧
+
+
+-- Matrix calculation
+
+def calculateDeterminant :=
+  let M : Matrix (Fin 4) (Fin 4) ℚ := !![
+    2, 0, -1, -1;
+    0, 3, -1, -1;
+    -1, -1, 3, 0;
+    -1, -1, 0, 2
+  ]
+  Matrix.det M
+
+#eval calculateDeterminant
+
+
+/-- set inclusions -/
+
+def answer : (Fin 4) := Fin.succ (13 : Fin 3)
+#check answer
+#eval answer
+
+-- #check {i : Fin 2 ↪o Fin 4}
+#check Fin 2
+
+def set2 : Finset (Fin 2) := Finset.univ
+noncomputable def set_inj24 : Finset (Fin 2 ↪o Fin 4) := Finset.univ
+
+#check set2
+#check set_inj24
+
+#eval set2.card
+#eval set_inj24.card
+
+
+/-- operations of Finsets and Fintypes -/
+
+-- Define the subtype that excludes a specific element
+def excludeElement {S : Type} [Fintype S] [DecidableEq S] (s : S) : Type :=
+  {x : S // x ≠ s}
+
+-- show that excludeElement s is a Fintype when S is a Fintype
+instance {S : Type} [Fintype S] [DecidableEq S] (s : S) : Fintype (excludeElement s) := by
+  apply Fintype.subtype {x : S | x ≠ s}
+  intro x
+  simp_all only [Finset.mem_filter, Finset.mem_univ, true_and]
+
+-- show that excludeElement s has DeciableEq
+instance {S : Type} [Fintype S] [dec : DecidableEq S] (s : S) : DecidableEq (excludeElement s) := by
+  unfold excludeElement
+  -- unfold DecidableEq
+  intro a b
+  obtain ⟨val, property⟩ := a
+  obtain ⟨val_1, property_1⟩ := b
+  simp_all only [Subtype.mk.injEq]
+  apply dec
+
+def Fin5no3 := {x : Fin 5 // x ≠ 3}
+
+instance : Fintype Fin5no3 :=
+  Fintype.subtype {n : Fin 5 | n ≠ 3} (by decide)
+
+variable {S : Type} {s : S} [Fintype S] [DecidableEq S]
+
+#check S
+#check ({x : S | x ≠ s} : Finset S)
+#check Fin 5
+#check Fin5no3
+#check excludeElement (3 : Fin 5)
+
+#check {x : Fin 5 // x ≠ 3}
+#check {x : Fin 5 | x ≠ 3}
+
+#eval (Finset.univ : Finset (Fin 5))
+#eval (Finset.univ : Finset Fin5no3)
+#eval (Finset.univ : Finset (excludeElement (3 : Fin 5)))
+
+
+-- alternative def of reduced laplacian matrix
+def redLapMatrix' {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj] (q : V) : Matrix (excludeElement q) (excludeElement q) ℤ :=
+  let inc : (excludeElement q) → V := fun x => x.val
+  -- let inc := fun x => x.val
+  (G.lapMatrix ℤ).submatrix inc inc
+
+def G := completeGraph (Fin 4)
+instance : DecidableRel G.Adj := by
+  unfold DecidableRel
+  intro a b
+  sorry
+
+-- edge set of house graph
+def hge : (Fin 5) → (Fin 5) → Bool
+  | 0, 1 => true
+  | 1, 2 => true
+  | 2, 3 => true
+  | 3, 4 => true
+  | 4, 0 => true
+  | 1, 4 => true
+  | _, _ => false
+
+def hG : SimpleGraph (Fin 5) where
+  Adj v w := hge v w || hge w v
+  symm := by
+    dsimp [Symmetric]; decide
+  loopless := by
+    dsimp [Irreflexive]; decide
+
+-- seems to be required to `#eval` number of edges
+instance : DecidableRel hG.Adj :=
+  fun a b => inferInstanceAs <| Decidable (hge a b || hge b a)
+
+#eval hG.lapMatrix ℤ
+-- #eval redLapMatrix' hG 1
+#eval (redLapMatrix' hG 1).det -- 11
