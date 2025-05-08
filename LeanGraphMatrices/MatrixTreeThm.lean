@@ -1,44 +1,73 @@
 import Mathlib.Combinatorics.SimpleGraph.Finite
 import Mathlib.Combinatorics.SimpleGraph.LapMatrix
 import Mathlib.Combinatorics.SimpleGraph.IncMatrix
+import Mathlib.Combinatorics.SimpleGraph.Acyclic
 import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
 
 universe u v
 
+variable {V : Type} [Fintype V] [LinearOrder V] [DecidableEq V]
+
 /-- placeholder for set of spanning trees of a graph -/
 -- here we take all edge-subsets of size N - 1, where N = number of vertices
-def spanningTreeFinset {V : Type} [Fintype V] (G : SimpleGraph V) [Fintype G.edgeSet]: Finset (Finset (Sym2 V)) :=
+def spanningTreeFinset (G : SimpleGraph V) [Fintype G.edgeSet]: Finset (Finset (Sym2 V)) :=
   Finset.powersetCard ((Fintype.card V) - 1) G.edgeFinset
 
-#eval (Fintype.card (Fin 4)) - 1
-
 /-- placeholder for reduced Laplacian matrix of a graph -/
-def redLapMatrix {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj] [AddGroupWithOne ℤ] (q : V) : Matrix V V ℤ :=
+def redLapMatrix [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj] [AddGroupWithOne ℤ] (q : V) : Matrix V V ℤ :=
   let char_q : V → ℤ := fun (x : V) => if x = q then 1 else 0
   ((G.lapMatrix ℤ).updateRow q char_q).updateCol q char_q
 
 /-- placeholder for signed incidence matrix of a graph -/
-noncomputable def signIncMatrix {V : Type} (G : SimpleGraph V) : Matrix V (Sym2 V) ℤ :=
+noncomputable def signIncMatrix (G : SimpleGraph V) : Matrix V (Sym2 V) ℤ :=
   G.incMatrix ℤ
 
-/-- statement of Matrix-Tree Theorem -/
-theorem matrix_tree_theorem {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [Fintype G.edgeSet] [DecidableRel G.Adj] : ∀ q : V, (redLapMatrix G q).det = (spanningTreeFinset G).card := by
-  sorry
-
-
 /-- Laplacian matrix is equal to self-product of (signed) incidence matrix -/
-lemma lapMatrix_incidenceMatrix_prod {V : Type} [Fintype V] [DecidableEq V] [LinearOrder V] (G : SimpleGraph V) [DecidableRel G.Adj] :
+lemma lapMatrix_incMatrix_prod (G : SimpleGraph V) [DecidableRel G.Adj] :
   G.lapMatrix ℤ = (signIncMatrix G : Matrix V (Sym2 V) ℤ) * ((signIncMatrix G : Matrix V (Sym2 V) ℤ).transpose) := by
   sorry
 
+-- TODO: use reduced incidence matrix here
+lemma redLapMatrix_incMatrix_prod (G : SimpleGraph V) [DecidableRel G.Adj] (q : V) :
+  (redLapMatrix G q) = (signIncMatrix G : Matrix V (Sym2 V) ℤ) * ((signIncMatrix G : Matrix V (Sym2 V) ℤ).transpose) := by
+  sorry
+
 /-- Cauchy-Binet for determinant of product -/
-example : Prop := ⊤
+theorem Matrix.det_mul' {m n : ℕ} (A : Matrix (Fin m) (Fin n) ℤ) (B : Matrix (Fin n) (Fin m) ℤ) :
+  det (A * B) = ∑ f : Fin m ↪o Fin n, det (A.submatrix id f) * det (B.submatrix f id) := by
+  sorry
 
 /-- determinant of spanning-tree minor of incidence matrix: if S ⊆ E(G), then
       - B₀[S].det is equal to ±1 if S forms a spanning tree
       - B₀[S].det is equal to 0 otherwise -/
-lemma indcidenceMatrix_submatrix_det {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [Fintype G.edgeSet] (S : V → Sym2 V) : ((signIncMatrix G).submatrix id S).det ∈ ({1, -1, 0} : Finset ℤ) :=
+-- TODO: image of S should contain edges of G; domain of S should be {v : V // v ≠ q}
+lemma incMatrix_submatrix_det (G : SimpleGraph V) [Fintype G.edgeSet] (S : V → Sym2 V) : ((signIncMatrix G).submatrix id S).det ∈ ({1, -1, 0} : Finset ℤ) :=
   sorry
+
+-- TODO: similar to above
+lemma incMatrix_submatrix_det_hasCycle (G : SimpleGraph V) [Fintype G.edgeSet] (S : V → Sym2 V) : ¬(SimpleGraph.IsAcyclic (SimpleGraph.fromEdgeSet (Set.image S Set.univ))) → ((signIncMatrix G).submatrix id S).det = 0 :=
+  sorry
+
+-- TODO: similar to above
+lemma incMatrix_submatrix_det_tree (G : SimpleGraph V) [Fintype G.edgeSet] (S : V → Sym2 V) : SimpleGraph.IsTree (SimpleGraph.fromEdgeSet (Set.image S Set.univ)) → ((signIncMatrix G).submatrix id S).det ∈ ({1, -1} : Finset ℤ) := by
+  sorry
+
+/-- statement of Matrix-Tree Theorem -/
+theorem matrix_tree_theorem [LinearOrder (Sym2 V)] (G : SimpleGraph V) [Fintype G.edgeSet] [DecidableRel G.Adj] : ∀ q : V, (redLapMatrix G q).det = (spanningTreeFinset G).card := by
+  intro q
+  -- expand reduced Laplacian matrix as self-product of reduced incidence matrix
+  rw [redLapMatrix_incMatrix_prod]
+  -- re-index the incidence matrix using (Fin n) rather than V
+  let n : ℕ := Fintype.card V
+  let incM := G.incMatrix ℤ
+  have fromFinN : Fin n → V := (Finset.orderEmbOfFin (Finset.univ : Finset V) (by trivial))
+  have fromFinNchoose2 : Fin (n*(n+1)/2) → (Sym2 V) := (Finset.orderEmbOfFin (Finset.univ : Finset (Sym2 V)) (by sorry))
+  let A : Matrix (Fin n) (Fin (n * (n+1) / 2)) ℤ := Matrix.submatrix (signIncMatrix G) fromFinN fromFinNchoose2
+  let B : _ := A.transpose
+  -- apply Cauchy-Binet
+  -- apply the incidence-matrix-minor lemmas
+  sorry
+
 
 
 /-- the number of spanning trees satsifies the deletion-contraction relation;
