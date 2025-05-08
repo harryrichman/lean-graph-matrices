@@ -30,6 +30,10 @@ Other references:
 
 - [Fin.sum_const](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Algebra/BigOperators/Fin.html#Fin.sum_const)
 
+- [monoEquivOfFin](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Data/Fintype/Sort.html#monoEquivOfFin), order isomorphism between `V` and `Fin (card V)`
+
+- [Finset.orderEmbOfFin](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Data/Finset/Sort.html#Finset.orderEmbOfFin), increasing bijection between `Fin (card V)` and `V`
+
 ## Using Lean
 
 Search tools:
