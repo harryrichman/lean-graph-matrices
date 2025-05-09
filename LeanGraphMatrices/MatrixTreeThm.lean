@@ -23,14 +23,18 @@ def redLapMatrix [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj] [AddGr
 noncomputable def signIncMatrix (G : SimpleGraph V) : Matrix V (Sym2 V) ℤ :=
   G.incMatrix ℤ
 
+noncomputable def redSignIncMatrix (G : SimpleGraph V) (q : V) : Matrix V (Sym2 V) ℤ :=
+  G.incMatrix ℤ
+
+
 /-- Laplacian matrix is equal to self-product of (signed) incidence matrix -/
 lemma lapMatrix_incMatrix_prod (G : SimpleGraph V) [DecidableRel G.Adj] :
-  G.lapMatrix ℤ = (signIncMatrix G : Matrix V (Sym2 V) ℤ) * ((signIncMatrix G : Matrix V (Sym2 V) ℤ).transpose) := by
+  G.lapMatrix ℤ = (signIncMatrix G) * ((signIncMatrix G).transpose) := by
   sorry
 
 -- TODO: use reduced incidence matrix here
 lemma redLapMatrix_incMatrix_prod (G : SimpleGraph V) [DecidableRel G.Adj] (q : V) :
-  (redLapMatrix G q) = (signIncMatrix G : Matrix V (Sym2 V) ℤ) * ((signIncMatrix G : Matrix V (Sym2 V) ℤ).transpose) := by
+  (redLapMatrix G q) = (redSignIncMatrix G q) * ((redSignIncMatrix G q).transpose) := by
   sorry
 
 /-- determinant of spanning-tree minor of incidence matrix: if S ⊆ E(G), then

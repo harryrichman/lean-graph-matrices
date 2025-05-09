@@ -1,6 +1,7 @@
 -- import Mathlib
 import Mathlib.Combinatorics.SimpleGraph.Finite
 import Mathlib.Combinatorics.SimpleGraph.LapMatrix
+import Mathlib.Combinatorics.SimpleGraph.IncMatrix
 import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
 
 
@@ -59,18 +60,18 @@ noncomputable def set_inj24 : Finset (Fin 2 ↪o Fin 4) := Finset.univ
 /-- operations of Finsets and Fintypes -/
 
 -- Define the subtype that excludes a specific element
-def excludeElement {S : Type} [Fintype S] [DecidableEq S] (s : S) : Type :=
+def delElement {S : Type} [Fintype S] [DecidableEq S] (s : S) : Type :=
   {x : S // x ≠ s}
 
 -- show that excludeElement s is a Fintype when S is a Fintype
-instance {S : Type} [Fintype S] [DecidableEq S] (s : S) : Fintype (excludeElement s) := by
+instance {S : Type} [Fintype S] [DecidableEq S] (s : S) : Fintype (delElement s) := by
   apply Fintype.subtype {x : S | x ≠ s}
   intro x
   simp_all only [Finset.mem_filter, Finset.mem_univ, true_and]
 
 -- show that excludeElement s has DeciableEq
-instance {S : Type} [Fintype S] [dec : DecidableEq S] (s : S) : DecidableEq (excludeElement s) := by
-  unfold excludeElement
+instance {S : Type} [Fintype S] [dec : DecidableEq S] (s : S) : DecidableEq (delElement s) := by
+  unfold delElement
   -- unfold DecidableEq
   intro a b
   obtain ⟨val, property⟩ := a
@@ -85,25 +86,31 @@ instance : Fintype Fin5no3 :=
 
 variable {S : Type} {s : S} [Fintype S] [DecidableEq S]
 
-#check S
 #check ({x : S | x ≠ s} : Finset S)
 #check Fin 5
 #check Fin5no3
-#check excludeElement (3 : Fin 5)
+#check delElement (3 : Fin 5)
 
 #check {x : Fin 5 // x ≠ 3}
 #check {x : Fin 5 | x ≠ 3}
 
 #eval (Finset.univ : Finset (Fin 5))
 #eval (Finset.univ : Finset Fin5no3)
-#eval (Finset.univ : Finset (excludeElement (3 : Fin 5)))
+#eval (Finset.univ : Finset (delElement (3 : Fin 5)))
+#eval (Finset.univ : Finset {x : Fin 5 // x ≠ 3})
+#eval (Finset.univ : Finset {x : Fin 5 | x ≠ 3})
 
 
+variable {V : Type} [Fintype V] [DecidableEq V
+]
 -- alternative def of reduced laplacian matrix
-def redLapMatrix' {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj] (q : V) : Matrix (excludeElement q) (excludeElement q) ℤ :=
-  let inc : (excludeElement q) → V := fun x => x.val
-  -- let inc := fun x => x.val
+def redLapMatrix' (G : SimpleGraph V) [DecidableRel G.Adj] (q : V) : Matrix ({v : V // v ≠ q}) ({v : V // v ≠ q}) ℤ :=
+  let inc : (delElement q) → V := fun x => x.val
   (G.lapMatrix ℤ).submatrix inc inc
+
+noncomputable def redSignIncMatrix' (G : SimpleGraph V) [DecidableRel G.Adj] (q : V) : Matrix ({v : V // v ≠ q}) (Sym2 V) ℤ :=
+  let inc := fun x => x.val
+  (G.incMatrix ℤ).submatrix inc id
 
 def G := completeGraph (Fin 4)
 #check G.Adj 1 1
