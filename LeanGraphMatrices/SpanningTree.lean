@@ -1,14 +1,15 @@
 import Mathlib.Combinatorics.SimpleGraph.Finite
 import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Mathlib.Combinatorics.SimpleGraph.Acyclic
+import Mathlib.Combinatorics.SimpleGraph.Path
 import Mathlib.Combinatorics.SimpleGraph.Connectivity.Subgraph
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Finite.Card
--- import Mathlib.Data.Finset.Sym2
 
 universe u
 
 variable {V : Type} [Fintype V] [DecidableEq V]
+
 instance (G : SimpleGraph V) : Decidable G.Connected := by
   sorry
 
@@ -31,19 +32,15 @@ def spanningTreeFinset {V : Type u} [Fintype V] (G : SimpleGraph V) [Fintype G.e
   -- take e plus a spanning tree of (G / e)
   -- take a spanning tree of (G \ e)
   let edge_sets := Finset.powersetCard ((Fintype.card V) - 1) G.edgeFinset
-  {A ∈ edge_sets | (SimpleGraph.fromEdgeSet A.toSet).IsTree}
-#eval (Finset.univ : Finset (Fin 4)).card - 1
-#eval (Fintype.card (Fin 4)) - 1
+  -- {A ∈ edge_sets | (SimpleGraph.fromEdgeSet A.toSet).IsTree}
+  edge_sets
 
 
 /-- Problem: should we implement a spanning tree as a subgraph, or a Finset of edges? Is it easy to convert between the two? -/
 
--- A spanning tree of a SimpleGraph is a subset of edges
-structure SimpleGraph.SpanningTree {V : Type u} (G : SimpleGraph V) where -- : Type u
-  /-- edges of the tree -/
-  edges : Set G.edgeSet
-  is_tree : (SimpleGraph.fromEdgeSet edges).IsTree
-    H = SimpleGraph -- TODO: edges must form a tree
+-- Spanning tree type of a SimpleGraph
+def SpanningTree {V : Type u} (G : SimpleGraph V) :=
+  {T : SimpleGraph V // T ≤ G ∧ T.IsTree}
 
 
 -- edge set of house graph
@@ -65,28 +62,54 @@ def houseGraph : SimpleGraph (Fin 5) where
     dsimp [Irreflexive]
     decide
 
--- seems to be required to `#eval` number of edges
 instance : DecidableRel houseGraph.Adj :=
   fun a b => inferInstanceAs <| Decidable (hge a b || hge b a)
 
 example : Prop := houseGraph.IsTree
-example : houseGraph.IsTree := by
+example : ¬houseGraph.IsTree := by
   rw [SimpleGraph.isTree_iff_connected_and_card]
-  constructor
-  · -- show graph is connected
-    sorry
-  · -- show graph has correct number of edges
-    simp
-    sorry
+  simp only [Nat.card_eq_fintype_card, Fintype.card_ofFinset, Fintype.card_fin, Nat.reduceEqDiff,
+    not_and]
+  intro _
+  decide -- houseGraph has 6 edges, not 4
 
-#check houseGraph.Connected
+
 example : houseGraph.Connected := by
   sorry
 
-#check houseGraph.IsAcyclic
-example : houseGraph.IsAcyclic := by
+example : ¬houseGraph.IsAcyclic := by
+  -- a graph is acyclic iff every edge is a bridge
   rw [SimpleGraph.isAcyclic_iff_forall_edge_isBridge]
-  intro e
-  sorry
+  simp only [not_forall]
+  simp only [exists_prop]
+  -- show that edge (0, 1) is not a bridge
+  use s(0, 1)
+  -- split two claims
+  constructor
+  · -- show s(0, 1) is an edge
+    decide
+  · -- show s(0, 1) is not a bridge
+    by_contra hbridge
+    -- e is bridge means every cycle does not contain e
+    rw [SimpleGraph.isBridge_iff_mem_and_forall_cycle_not_mem] at hbridge
+    rcases hbridge with ⟨hedge, hnocycle⟩
+    -- for contradiction, contruct a cycle that *does* contain s(0, 1)
+    -- first, construct walk 0 - 1 - 4 - 0
+    let nil : houseGraph.Walk 0 0 := SimpleGraph.Walk.nil
+    let walk01 : houseGraph.Walk 1 0 := SimpleGraph.Walk.cons' 1 0 0 (by decide) nil
+    let walk04 : houseGraph.Walk 4 0 := SimpleGraph.Walk.cons' 4 1 0 (by decide) walk01
+    let walk00 : houseGraph.Walk 0 0 := SimpleGraph.Walk.cons' 0 4 0 (by decide) walk04
+    specialize hnocycle walk00
+    -- check that constructed walk is a cycle
+    have h00cycle: walk00.IsCycle := by
+      rw [SimpleGraph.Walk.isCycle_def]
+      rw [SimpleGraph.Walk.isTrail_def]
+      decide
+    apply hnocycle h00cycle
+    decide
 
-#eval (spanningTreeFinset houseGraph)
+#check SimpleGraph.IsBridge
+#check houseGraph.Walk 0 0
+
+-- #eval (spanningTreeFinset houseGraph)
+#check (Set.univ : Set (SpanningTree houseGraph))
