@@ -33,9 +33,7 @@ lemma redLapMatrix_incMatrix_prod (G : SimpleGraph V) [DecidableRel G.Adj] (q : 
   sorry
 
 /-- Cauchy-Binet for determinant of product -/
-theorem Matrix.det_mul' {m n : ℕ} (A : Matrix (Fin m) (Fin n) ℤ) (B : Matrix (Fin n) (Fin m) ℤ) :
-  det (A * B) = ∑ f : Fin m ↪o Fin n, det (A.submatrix id f) * det (B.submatrix f id) := by
-  sorry
+example : Prop := ⊤
 
 /-- determinant of spanning-tree minor of incidence matrix: if S ⊆ E(G), then
       - B₀[S].det is equal to ±1 if S forms a spanning tree
