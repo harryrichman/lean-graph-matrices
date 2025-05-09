@@ -3,6 +3,7 @@ import Mathlib.Combinatorics.SimpleGraph.LapMatrix
 import Mathlib.Combinatorics.SimpleGraph.IncMatrix
 import Mathlib.Combinatorics.SimpleGraph.Acyclic
 import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
+import LeanGraphMatrices.CauchyBinet
 
 universe u v
 
@@ -32,9 +33,6 @@ lemma redLapMatrix_incMatrix_prod (G : SimpleGraph V) [DecidableRel G.Adj] (q : 
   (redLapMatrix G q) = (signIncMatrix G : Matrix V (Sym2 V) ℤ) * ((signIncMatrix G : Matrix V (Sym2 V) ℤ).transpose) := by
   sorry
 
-/-- Cauchy-Binet for determinant of product -/
-example : Prop := ⊤
-
 /-- determinant of spanning-tree minor of incidence matrix: if S ⊆ E(G), then
       - B₀[S].det is equal to ±1 if S forms a spanning tree
       - B₀[S].det is equal to 0 otherwise -/
@@ -55,14 +53,11 @@ theorem matrix_tree_theorem [LinearOrder (Sym2 V)] (G : SimpleGraph V) [Fintype 
   intro q
   -- expand reduced Laplacian matrix as self-product of reduced incidence matrix
   rw [redLapMatrix_incMatrix_prod]
-  -- re-index the incidence matrix using (Fin n) rather than V
-  let n : ℕ := Fintype.card V
-  let incM := G.incMatrix ℤ
-  have fromFinN : Fin n → V := (Finset.orderEmbOfFin (Finset.univ : Finset V) (by trivial))
-  have fromFinNchoose2 : Fin (n*(n+1)/2) → (Sym2 V) := (Finset.orderEmbOfFin (Finset.univ : Finset (Sym2 V)) (by sorry))
-  let A : Matrix (Fin n) (Fin (n * (n+1) / 2)) ℤ := Matrix.submatrix (signIncMatrix G) fromFinN fromFinNchoose2
-  let B : _ := A.transpose
   -- apply Cauchy-Binet
+  rw [Matrix.det_mul']
+  -- simplify matrix expression
+  simp_rw [← Matrix.transpose_submatrix]
+  simp_rw [Matrix.det_transpose]
   -- apply the incidence-matrix-minor lemmas
   sorry
 

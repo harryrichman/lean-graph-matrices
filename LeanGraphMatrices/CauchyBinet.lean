@@ -4,11 +4,12 @@ import LeanGraphMatrices.ForMathlib
 open scoped Matrix
 
 variable {R : Type* } { m n : ℕ } [CommRing R]
+variable {M N : Type} [Fintype M] [Fintype N] [DecidableEq M] [DecidableEq N] [LinearOrder M] [LinearOrder N]
 
 /-- Cauchy-Binet, https://en.wikipedia.org/wiki/Cauchy%E2%80%93Binet_formula -/
 
-theorem Matrix.det_mul' (A : Matrix (Fin m) (Fin n) R) (B : Matrix (Fin n) (Fin m) R) :
-  det (A * B) = ∑ f : Fin m ↪o Fin n, det (A.submatrix id f) * det (B.submatrix f id) := by
+theorem Matrix.det_mul' (A : Matrix M N R) (B : Matrix N M R) :
+  det (A * B) = ∑ f : M ↪o N, det (A.submatrix id f) * det (B.submatrix f id) := by
   -- expand determinant in matrix entries as sum over permutations, on LHS
   rw [Matrix.det_apply (A * B)]
   -- simp_rw [Matrix.mul_apply, Finset.prod_sum, Finset.prod_mul_distrib]

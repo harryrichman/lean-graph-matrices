@@ -34,6 +34,9 @@ Other references:
 
 - [Finset.orderEmbOfFin](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Data/Finset/Sort.html#Finset.orderEmbOfFin), increasing bijection between `Fin (card V)` and `V`
 
+- [Matrix.reindex](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Data/Matrix/Defs.html#Matrix.reindex)
+
+
 ## Using Lean
 
 Search tools:
