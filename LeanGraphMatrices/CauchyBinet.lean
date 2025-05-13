@@ -24,11 +24,24 @@ theorem Matrix.det_mul' (A : Matrix M N R) (B : Matrix N M R) :
   -- expand determinats on RHS
   simp_rw [Matrix.det_apply]
   simp_all only [submatrix_apply, id_eq]
+  -- exchange order of summation
+  simp_rw [Finset.smul_sum]
+  rw [Finset.sum_comm]
+
   -- calc
   --   ∑ x, Equiv.Perm.sign x • ∑ x_1, (∏ x_2, A (x x_2) (x_1 x_2 ⟨x_2, Finset.mem_univ x_2⟩.property)) * ∏ x, B (x_1 x ⟨x, Finset.mem_univ x⟩.property) x = ∑ x_1, ∑ σ, Equiv.Perm.sign σ • (∏ x_2, A (σ x_2) (x_1 x_2 ⟨x_2, Finset.mem_univ x_2⟩.property)) * ∏ x, B (x_1 x ⟨x, Finset.mem_univ x⟩.property) x := by rfl -- by simp?
   --   _ = 0 := by simp?
   --   _ = ∑ x, (∑ x_1, Equiv.Perm.sign x_1 • ∏ x_2, A (x_1 x_2) (x x_2)) * ∑ x_1, Equiv.Perm.sign x_1 • ∏ x_2, B (x (x_1 x_2)) x_2 := by rfl
   sorry
+
+example {n m : ℕ} {f : (Fin m) → (Fin n) → ℤ} {c : ℤ} : ∑ (i : Fin m), c • (∑ (j : Fin n), f i j) = ∑ (i : Fin m), ∑ (j : Fin n), c • f i j := by
+  simp_rw [Finset.smul_sum]
+
+example {n m : ℕ} {f : (Fin m) → (Fin n) → ℤ} {c : ℤ} : ∑ (i : Fin m), (∑ (j : Fin n), f i j) • c = ∑ (i : Fin m), ∑ (j : Fin n), ((f i j) • c) := by
+  simp_rw [Finset.sum_smul]
+
+#check Finset.sum_smul
+#check Finset.smul_sum
 
 
 example : True := by
