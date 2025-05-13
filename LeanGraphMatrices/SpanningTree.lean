@@ -6,20 +6,52 @@ import Mathlib.Combinatorics.SimpleGraph.Connectivity.Subgraph
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Finite.Card
 
+set_option diagnostics true
+
 universe u
 
 variable {V : Type} [Fintype V] [DecidableEq V]
 
+/-- Problem: should we implement a spanning tree as a subgraph, or a Finset of edges? Is it easy to convert between the two? -/
+
+-- Spanning tree type of a SimpleGraph
+structure SpanningTree (G : SimpleGraph V) where
+  Tree : SimpleGraph V
+  subG : Tree ≤ G
+  isTree : Tree.IsTree
+
+def SpanningTree' {V : Type u} (G : SimpleGraph V) :=
+  {T : SimpleGraph V // T ≤ G ∧ T.IsTree}
+
 instance (G : SimpleGraph V) : Decidable G.Connected := by
+  -- apply decidable_of_iff _ (SimpleGraph.connected_iff_exists_forall_reachable G)
   sorry
 
 -- show that G.IsTree is decidable
-noncomputable instance (G : SimpleGraph V) [Fintype G.edgeSet] : Decidable G.IsTree := by
+noncomputable instance (G : SimpleGraph V) : Decidable G.IsTree := by
   -- For connected graphs with (n-1) edges:
   have h : _ := G.isTree_iff_connected_and_card
   -- have hcard : Nat.card V = Fintype.card V := by
   --   apply Nat.card_eq V
   apply decidable_of_iff (G.Connected ∧ Nat.card G.edgeSet + 1 = Nat.card V) (iff_comm.2 h)
+
+instance (G : SimpleGraph V) [Fintype G.edgeSet] : Fintype (SpanningTree G) where
+  -- elems := {T : SimpleGraph V | T ≤ G ∧ T.IsTree}
+  elems :=
+    let tree_set := Finset.filter (fun x => x.IsTree) (Finset.univ : Finset (SimpleGraph V))
+    tree_set.map (fun t => SpanningTree.mk t (by sorry) (by sorry))
+  complete := by
+    sorry
+
+-- by
+--   -- show that there are finitely many simple graphs on V, assuming V is finite
+--   let x : Finset (SimpleGraph V) := Finset.univ
+--   -- show that {spanning trees} are a subset of all simple graphs on V
+--   -- have h : _ := SimpleGraph.iff
+--   -- let y : Finset ({T : SimpleGraph V // T ≤ G}) := Finset.univ
+--   -- apply Finite.of_injective SimpleGraph.Adj
+--   -- apply SimpleGraph.ext
+--   sorry -- infer_instance
 
 #check decidable_of_iff
 #check SimpleGraph.isTree_iff_connected_and_card
@@ -34,13 +66,6 @@ def spanningTreeFinset {V : Type u} [Fintype V] (G : SimpleGraph V) [Fintype G.e
   let edge_sets := Finset.powersetCard ((Fintype.card V) - 1) G.edgeFinset
   -- {A ∈ edge_sets | (SimpleGraph.fromEdgeSet A.toSet).IsTree}
   edge_sets
-
-
-/-- Problem: should we implement a spanning tree as a subgraph, or a Finset of edges? Is it easy to convert between the two? -/
-
--- Spanning tree type of a SimpleGraph
-def SpanningTree {V : Type u} (G : SimpleGraph V) :=
-  {T : SimpleGraph V // T ≤ G ∧ T.IsTree}
 
 
 -- edge set of house graph
@@ -112,4 +137,6 @@ example : ¬houseGraph.IsAcyclic := by
 #check houseGraph.Walk 0 0
 
 -- #eval (spanningTreeFinset houseGraph)
+#check ({T : SimpleGraph V // True})
 #check (Set.univ : Set (SpanningTree houseGraph))
+-- #eval (Finset.univ : Finset (SpanningTree houseGraph))
